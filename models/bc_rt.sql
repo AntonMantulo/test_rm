@@ -19,6 +19,7 @@
 
 
 WITH master AS (
+WITH master AS (
 WITH d as (
 
 SELECT 
@@ -41,9 +42,11 @@ WHERE ((note like 'ReleaseBonusWallet%' and payitemname='UBS')
   OR (note like 'ReturnAmountCausedByCompletion%' and payitemname='UBS')
   OR (note like 'ConfiscateBonusCausedByExpiry%' and payitemname='UBS')
   OR (note like 'ConfiscateBonusCausedByForfeiture%' and payitemname='UBS'))
+  
   {% if is_incremental() %}
-            AND DATE(postingcompleted) in ({{ partitions_to_replace | join(',') }})
-        {% endif %}
+        and DATE(postingcompleted) in ({{ partitions_to_replace | join(',') }})
+    {% endif %}
+
   
   
   )
@@ -68,9 +71,11 @@ bonus_granted AS (
         ELSE 'casino'
       END as type
     FROM dbt_amantulo.bets
+
     {% if is_incremental() %}
-            WHERE DATE(postingcompleted) >= CURRENT_DATE() -32
-        {% endif %}
+        WHERE DATE(postingcompleted) >= CURRENT_DATE() -32
+    {% endif %}
+
   )
 
   SELECT 
@@ -89,14 +94,17 @@ bonus_granted AS (
     AND note is not null
     AND postingtype = 'Bonus'
     AND payitemname = 'UBS'
+
     {% if is_incremental() %}
-            AND DATE(postingcompleted) >= CURRENT_DATE() -32
-        {% endif %}
+        AND DATE(postingcompleted) >= CURRENT_DATE() -32
+      {% endif %}
+    
+    
 ),
 
 ubw AS (
 SELECT CAST(TRIM(RIGHT(note, 13)) AS INT64) as bonuswalletid, 
-  amount * eurexchangerate as unpaid_bonus_winnings
+  SUM(amount * eurexchangerate) as unpaid_bonus_winnings
 FROM `stitch-test-296708.sll.posting` 
 WHERE  (note like 'ConfiscateWinningsCausedByForfeiture%' 
   or note like 'ConfiscateWinningsCausedByExpiry%'
@@ -104,8 +112,9 @@ WHERE  (note like 'ConfiscateWinningsCausedByForfeiture%'
     and payitemname = 'UBS'
 
     {% if is_incremental() %}
-            WHERE DATE(postingcompleted) in ({{ partitions_to_replace | join(',') }})
-        {% endif %}
+        and DATE(postingcompleted) in ({{ partitions_to_replace | join(',') }})
+      {% endif %}
+GROUP BY 1
     )
 
 SELECT 
@@ -142,8 +151,12 @@ ON bonus_granted.bonuswalletid = master.bonuswalletid
 LEFT JOIN ubw
 ON bonus_granted.bonuswalletid = ubw.bonuswalletid
 
+)
 
-{% if is_incremental() %}
-        WHERE DATE(postingcompleted) in ({{ partitions_to_replace | join(',') }})
-        and bonuswalletid not in (SELECT bonuswalletid FROM dbt_amantulo.bonus_costs WHERE DATE(postingcompleted) < CURRENT_DATE() -2)
-    {% endif %}
+SELECT *
+FROM master 
+
+    {% if is_incremental() %}
+        WHERE (DATE(postingcompleted) in ({{ partitions_to_replace | join(',') }}) or date(granted)  >= CURRENT_DATE() -1)
+          and bonuswalletid not in (SELECT bonuswalletid FROM `stitch-test-296708.dbt_amantulo.bonus_costs` WHERE postingcompleted is not null and DATE(postingcompleted) < CURRENT_DATE() -2)
+      {% endif %}
