@@ -38,7 +38,12 @@ WHERE (note LIKE 'ReturnAmountCausedByCompletion%'
 SELECT *,
   ROW_NUMBER () OVER (PARTITION BY bonuswalletid ORDER BY postingcompleted ASC) AS rn   
 FROM s
-WHERE bonuswalletid not in (SELECT bonuswalletid FROM dbt_amantulo.bonus_costs WHERE DATE(postingcompleted) < CURRENT_DATE() -1)) 
+
+{% if is_incremental() %}
+  WHERE bonuswalletid not in (SELECT bonuswalletid FROM dbt_amantulo.bc_rt WHERE DATE(postingcompleted) < CURRENT_DATE() -1)
+  {% endif %}
+  
+  ) 
 SELECT * 
 FROM d 
 WHERE rn = 1
