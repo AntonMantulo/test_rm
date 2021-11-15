@@ -130,13 +130,13 @@ SELECT
   CASE
     WHEN bonus_status = 'released' or bonus_status = 'used-up'
     THEN bonus_granted.amount
-    ELSE bonus_granted.amount - master.amount
+    ELSE bonus_granted.amount - IFNULL(master.amount, 0)
   END as amount,
   master.eurexchangerate,
   CASE
     WHEN bonus_status = 'released' or bonus_status = 'used-up'
     THEN bonus_granted.bonus_granted
-    ELSE bonus_granted.bonus_granted - (master.amount * master.eurexchangerate)
+    ELSE bonus_granted.bonus_granted - IFNULL((master.amount * master.eurexchangerate), 0)
   END as amounteur,
   master.postingcompleted,
   CASE
