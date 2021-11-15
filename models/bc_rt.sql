@@ -70,7 +70,7 @@ bonus_granted AS (
         THEN 'sport'
         ELSE 'casino'
       END as type
-    FROM {{ref ('bets') }}
+    FROM {{ref ('bets_rt') }}
 
     {% if is_incremental() %}
         WHERE DATE(postingcompleted) >= CURRENT_DATE() -32
