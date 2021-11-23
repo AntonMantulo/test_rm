@@ -112,7 +112,7 @@ WHERE  (note like 'ConfiscateWinningsCausedByForfeiture%'
     and payitemname = 'UBS'
 
     {% if is_incremental() %}
-        and DATE(postingcompleted) in ({{ partitions_to_replace | join(',') }})
+        and DATE(postingcompleted) >= CURRENT_DATE() -32
       {% endif %}
 GROUP BY 1
     )
