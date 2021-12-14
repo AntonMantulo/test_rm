@@ -1,6 +1,6 @@
 {% set partitions_to_replace = [
-  'current_date',
-  'date_sub(current_date, interval 1 day)'
+  'timestamp(current_date)',
+  'timestamp(date_sub(current_date, interval 1 day))'
 ] %}
 
 
@@ -44,7 +44,7 @@ WHERE ((note like 'ReleaseBonusWallet%' and payitemname='UBS')
   OR (note like 'ConfiscateBonusCausedByForfeiture%' and payitemname='UBS'))
   
   {% if is_incremental() %}
-        and DATE(postingcompleted) in ({{ partitions_to_replace | join(',') }})
+        and postingcompleted in ({{ partitions_to_replace | join(',') }})
     {% endif %}
 
   
@@ -157,6 +157,6 @@ SELECT *
 FROM master 
 
     {% if is_incremental() %}
-        WHERE (DATE(postingcompleted) in ({{ partitions_to_replace | join(',') }}) or date(granted)  >= CURRENT_DATE() -1)
+        WHERE (postingcompleted in ({{ partitions_to_replace | join(',') }}) or date(granted)  >= CURRENT_DATE() -1)
           and bonuswalletid not in (SELECT bonuswalletid FROM `stitch-test-296708.dbt_amantulo.bonus_costs` WHERE postingcompleted is not null and DATE(postingcompleted) < CURRENT_DATE() -2)
       {% endif %}

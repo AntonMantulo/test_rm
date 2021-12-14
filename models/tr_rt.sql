@@ -1,6 +1,6 @@
 {% set partitions_to_replace = [
-  'current_date',
-  'date_sub(current_date, interval 1 day)'
+  'timestamp(current_date)',
+  'timestamp(date_sub(current_date, interval 1 day))'
 ] %}
 
 
@@ -35,7 +35,7 @@ WHERE transactionstatus = 'Success'
   AND creditamount <> 0
   
 {% if is_incremental() %}
-        AND DATE(transactioncompleted) in ({{ partitions_to_replace | join(',') }})
+        AND transactioncompleted in ({{ partitions_to_replace | join(',') }})
     {% endif %}
     
 UNION ALL
@@ -57,6 +57,6 @@ WHERE transactiontype = 'Agent2User'
       
       {% if is_incremental() %}
         -- recalculate yesterday + today
-        AND DATE(transactioncompleted) in ({{ partitions_to_replace | join(',') }})
-        AND DATE(postingcompleted) in ({{ partitions_to_replace | join(',') }})
+        AND transactioncompleted in ({{ partitions_to_replace | join(',') }})
+        AND postingcompleted in ({{ partitions_to_replace | join(',') }})
             {% endif %}

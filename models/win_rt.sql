@@ -1,6 +1,6 @@
 {% set partitions_to_replace = [
-  'current_date',
-  'date_sub(current_date, interval 1 day)'
+  'timestamp(current_date)',
+  'timestamp(date_sub(current_date, interval 1 day))'
 ] %}
 
 
@@ -34,7 +34,7 @@ WHERE (note LIKE 'ReturnAmountCausedByCompletion%'
   AND payitemname = 'UBS'
   
 {% if is_incremental() %}
-        and DATE(postingcompleted) in ({{ partitions_to_replace | join(',') }})
+        and postingcompleted in ({{ partitions_to_replace | join(',') }})
     {% endif %}
 
 )
@@ -145,5 +145,5 @@ FROM master
 WHERE postingcompleted is not null
 
 {% if is_incremental() %}
-        and DATE(postingcompleted) in ({{ partitions_to_replace | join(',') }})
+        and postingcompleted in ({{ partitions_to_replace | join(',') }})
     {% endif %}
