@@ -11,7 +11,8 @@
     incremental_strategy = 'insert_overwrite', 
     partition_by={
       "field": "postingcompleted",
-      "data_type": "timestamp"
+      "data_type": "timestamp",
+      "granularity": "day"
     },
     partitions = partitions_to_replace
 )}}
@@ -30,7 +31,7 @@ WHERE (note LIKE 'ReturnAmountCausedByCompletion%'
   AND payitemname = 'UBS'
 
 {% if is_incremental() %}
-        and postingcompleted in ({{ partitions_to_replace | join(',') }})
+        and DATE(postingcompleted) >= CURRENT_DATE() -1
     {% endif %}
 
 )
@@ -181,5 +182,5 @@ FROM master
 WHERE postingcompleted is not null
 
 {% if is_incremental() %}
-        and postingcompleted in ({{ partitions_to_replace | join(',') }})
+        and DATE(postingcompleted) >= CURRENT_DATE ()-1
     {% endif %}

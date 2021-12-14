@@ -57,6 +57,6 @@ WHERE transactiontype = 'Agent2User'
       
       {% if is_incremental() %}
         -- recalculate yesterday + today
-        AND transactioncompleted in ({{ partitions_to_replace | join(',') }})
-        AND postingcompleted in ({{ partitions_to_replace | join(',') }})
+        AND transactioncompleted >= CURRENT_DATE() -1
+        AND postingcompleted >= CURRENT_DATE() -1
             {% endif %}
