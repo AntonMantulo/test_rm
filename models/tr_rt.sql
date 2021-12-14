@@ -57,6 +57,6 @@ WHERE transactiontype = 'Agent2User'
       
       {% if is_incremental() %}
         -- recalculate yesterday + today
-        AND transactioncompleted >= CURRENT_DATE() -1
-        AND postingcompleted >= CURRENT_DATE() -1
+        AND DATE(transactioncompleted) >= CURRENT_DATE() -1
+        AND DATE(postingcompleted) >= CURRENT_DATE() -1
             {% endif %}

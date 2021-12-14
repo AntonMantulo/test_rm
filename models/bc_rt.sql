@@ -157,6 +157,6 @@ SELECT *
 FROM master 
 
     {% if is_incremental() %}
-        WHERE (postingcompleted >= CURRENT_DATE() -1 or date(granted)  >= CURRENT_DATE() -1)
+        WHERE (DATE(postingcompleted) >= CURRENT_DATE() -1 or date(granted)  >= CURRENT_DATE() -1)
           and bonuswalletid not in (SELECT bonuswalletid FROM `stitch-test-296708.dbt_amantulo.bonus_costs` WHERE postingcompleted is not null and DATE(postingcompleted) < CURRENT_DATE() -2)
       {% endif %}
