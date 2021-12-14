@@ -44,7 +44,7 @@ WHERE ((note like 'ReleaseBonusWallet%' and payitemname='UBS')
   OR (note like 'ConfiscateBonusCausedByForfeiture%' and payitemname='UBS'))
   
   {% if is_incremental() %}
-        and postingcompleted in ({{ partitions_to_replace | join(',') }})
+        and DATE(postingcompleted) >= CURRENT_DATE() -1
     {% endif %}
 
   
@@ -157,6 +157,6 @@ SELECT *
 FROM master 
 
     {% if is_incremental() %}
-        WHERE (postingcompleted in ({{ partitions_to_replace | join(',') }}) or date(granted)  >= CURRENT_DATE() -1)
+        WHERE (postingcompleted >= CURRENT_DATE() -1 or date(granted)  >= CURRENT_DATE() -1)
           and bonuswalletid not in (SELECT bonuswalletid FROM `stitch-test-296708.dbt_amantulo.bonus_costs` WHERE postingcompleted is not null and DATE(postingcompleted) < CURRENT_DATE() -2)
       {% endif %}

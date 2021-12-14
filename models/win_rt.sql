@@ -34,7 +34,7 @@ WHERE (note LIKE 'ReturnAmountCausedByCompletion%'
   AND payitemname = 'UBS'
   
 {% if is_incremental() %}
-        and postingcompleted in ({{ partitions_to_replace | join(',') }})
+        and DATE(postingcompleted) >= CURRENT_DATE() -1
     {% endif %}
 
 )
@@ -145,5 +145,5 @@ FROM master
 WHERE postingcompleted is not null
 
 {% if is_incremental() %}
-        and postingcompleted in ({{ partitions_to_replace | join(',') }})
+        and DATE(postingcompleted) >= CURRENT_DATE() -1
     {% endif %}
