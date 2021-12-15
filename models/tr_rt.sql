@@ -35,7 +35,7 @@ WHERE transactionstatus = 'Success'
   AND creditamount <> 0
   
 {% if is_incremental() %}
-        AND transactioncompleted in ({{ partitions_to_replace | join(',') }})
+        AND DATE(transactioncompleted) >= CURRENT_DATE() -1
     {% endif %}
     
 UNION ALL
