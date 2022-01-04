@@ -60,3 +60,27 @@ WHERE transactiontype = 'Agent2User'
         AND DATE(transactioncompleted) >= CURRENT_DATE() -1
         AND DATE(postingcompleted) >= CURRENT_DATE() -1
             {% endif %}
+
+UNION ALL
+
+SELECT p.userid, 
+  "Deposit" AS transactiontype,
+  transactioncompleted,
+  (creditamount*eurcreditexchangerate) as amounteur,
+  creditamount as amount,
+  eurcreditexchangerate as eurexchangerate,
+  creditcurrency as currency,
+  t.transid,
+  CONCAT("Manual:  ", lastnote) as lastnote
+FROM sll.transactions as t
+JOIN sll.posting as p
+ON t.transid = p.transid
+WHERE transactiontype = 'Vendor2User' 
+      AND p.userid != 3824319 AND p.userid <> 9702810
+      AND creditamount <> 0
+
+      {% if is_incremental() %}
+        -- recalculate yesterday + today
+        AND DATE(transactioncompleted) >= CURRENT_DATE() -1
+        AND DATE(postingcompleted) >= CURRENT_DATE() -1
+            {% endif %}
